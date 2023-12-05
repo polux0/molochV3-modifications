@@ -1,7 +1,7 @@
 pragma solidity >=0.8.0;
 //SPDX-License-Identifier: MIT
 
-import "@openzeppelin/contracts/access/Ownable.sol"; //https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/access/Ownable.sol
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
@@ -9,7 +9,7 @@ import "./interfaces/IBaal.sol";
 
 /// @title Loot
 /// @notice Accounting for Baal non voting shares
-contract Loot is ERC20, Initializable {
+contract LootERC20 is ERC20, Initializable {
     using ECDSA for bytes32;
 
     // ERC20 CONFIG
@@ -146,17 +146,17 @@ contract Loot is ERC20, Initializable {
     /// @param from The address of the source account.
     /// @param to The address of the destination account.
     /// @param amount The number of `loot` tokens to transfer.
-    function _beforeTokenTransfer(
-        address from,
-        address to,
-        uint256 amount
-    ) internal override(ERC20) {
-        super._beforeTokenTransfer(from, to, amount);
-        require(
-            from == address(0) || /*Minting allowed*/
-                (msg.sender == address(baal) && to == address(0)) || /*Burning by Baal allowed*/
-                !baal.lootPaused(),
-            "!transferable"
-        );
-    }
+    // function _beforeTokenTransfer(
+    //     address from,
+    //     address to,
+    //     uint256 amount
+    // ) internal override(ERC20) {
+    //     super._beforeTokenTransfer(from, to, amount);
+    //     require(
+    //         from == address(0) || /*Minting allowed*/
+    //             (msg.sender == address(baal) && to == address(0)) || /*Burning by Baal allowed*/
+    //             !baal.lootPaused(),
+    //         "!transferable"
+    //     );
+    // }
 }
