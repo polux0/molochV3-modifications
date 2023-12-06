@@ -9,14 +9,14 @@
        ▀    ▀*/
 pragma solidity >=0.8.0;
 
-import "@safe-contracts/contracts/base/Executor.sol";
-import "@gnosis.pm/safe-contracts/contracts/GnosisSafe.sol";
-import "@gnosis.pm/zodiac/contracts/core/Module.sol";
-import "@gnosis.pm/safe-contracts/contracts/common/Enum.sol";
-import "@gnosis.pm/safe-contracts/contracts/common/Enum.sol";
+import "safe-contracts/contracts/base/Executor.sol";
+import "safe-contracts/contracts/Safe.sol";
+import "zodiac/contracts/core/Module.sol";
+import "safe-contracts/contracts/common/Enum.sol";
+import "safe-contracts/contracts/common/Enum.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
-import "@gnosis.pm/zodiac/contracts/factory/ModuleProxyFactory.sol";
-import "@gnosis.pm/safe-contracts/contracts/proxies/GnosisSafeProxyFactory.sol";
+import "zodiac/contracts/factory/ModuleProxyFactory.sol";
+import "safe-contracts/contracts/proxies/SafeProxyFactory.sol";
 
 
 interface IBaalToken {
@@ -1091,7 +1091,7 @@ contract BaalSummoner is ModuleProxyFactory {
 
     // Proxy summoners
     //
-    GnosisSafeProxyFactory gnosisSafeProxyFactory;
+    SafeProxyFactory safeProxyFactory;
     ModuleProxyFactory moduleProxyFactory;
 
     event SummonBaal(
@@ -1106,7 +1106,7 @@ contract BaalSummoner is ModuleProxyFactory {
         address _gnosisSingleton,
         address _gnosisFallbackLibrary,
         address _gnosisMultisendLibrary,
-        address _gnosisSafeProxyFactory,
+        address _safeProxyFactory,
         address _moduleProxyFactory,
         address _lootSingleton, 
         address _sharesSingleton 
@@ -1115,8 +1115,8 @@ contract BaalSummoner is ModuleProxyFactory {
         gnosisSingleton = _gnosisSingleton;
         gnosisFallbackLibrary = _gnosisFallbackLibrary;
         gnosisMultisendLibrary = _gnosisMultisendLibrary;
-        gnosisSafeProxyFactory = GnosisSafeProxyFactory(
-            _gnosisSafeProxyFactory
+        safeProxyFactory = SafeProxyFactory(
+            _safeProxyFactory
         );
         moduleProxyFactory = ModuleProxyFactory(_moduleProxyFactory);
         lootSingleton = _lootSingleton;
@@ -1195,7 +1195,7 @@ contract BaalSummoner is ModuleProxyFactory {
         // Deploy new safe but do not set it up yet
         GnosisSafe _safe = GnosisSafe(
             payable(
-                gnosisSafeProxyFactory.createProxy(
+                safeProxyFactory.createProxy(
                     gnosisSingleton,
                     abi.encodePacked(_saltNonce)
                 )
