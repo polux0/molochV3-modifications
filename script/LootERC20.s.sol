@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 import {Script, console2} from "forge-std/Script.sol";
 import '../src/LootERC20.sol';
 
-contract LooteERC20Script is Script {
+contract LootERC20Script is Script {
     function setUp() public {}
 
     function run() public {
@@ -14,4 +14,7 @@ contract LooteERC20Script is Script {
         LootERC20 lootERC20 = new LootERC20();
         vm.stopBroadcast();
     }
+    // function setUp() public {
+
+    // }
 }
