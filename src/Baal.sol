@@ -9,7 +9,7 @@
        ▀    ▀*/
 pragma solidity >=0.8.0;
 
-import "@gnosis.pm/safe-contracts/contracts/base/Executor.sol";
+import "@safe-contracts/contracts/base/Executor.sol";
 import "@gnosis.pm/safe-contracts/contracts/GnosisSafe.sol";
 import "@gnosis.pm/zodiac/contracts/core/Module.sol";
 import "@gnosis.pm/safe-contracts/contracts/common/Enum.sol";
