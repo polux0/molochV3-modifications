@@ -4,9 +4,12 @@
 forge script script/LootERC20.s.sol:LootERC20Script --fork-url http://localhost:8545 --broadcast
 #deploy SharesERC20
 forge script script/SharesERC20.s.sol:SharesERC20Script --fork-url http://localhost:8545 --broadcast
+
 #deploy Baal
+
 
 
 #technical debt: 
 
-1. create setUp() function in both LootERC20 and SharesERC20
+1. create setUp() function in LootERC20
+2. create setUp() function in SharesERC20
