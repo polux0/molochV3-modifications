@@ -9,14 +9,12 @@
        ▀    ▀*/
 pragma solidity >=0.8.0;
 
-import "safe-contracts/contracts/base/Executor.sol";
-import "safe-contracts/contracts/Safe.sol";
+import "@gnosis.pm/safe-contracts/contracts/base/Executor.sol";
+import "@gnosis.pm/safe-contracts/contracts/Safe.sol";
 import "zodiac/contracts/core/Module.sol";
-import "safe-contracts/contracts/common/Enum.sol";
-import "safe-contracts/contracts/common/Enum.sol";
+import "@gnosis.pm/safe-contracts/contracts/common/Enum.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
-import "zodiac/contracts/factory/ModuleProxyFactory.sol"; // BaalFactory
-import "safe-contracts/contracts/proxies/SafeProxyFactory.sol"; // BaalFactory
+import "./interfaces/IBaalToken.sol";
 
 
 contract CloneFactory {
@@ -274,8 +272,8 @@ contract Baal is CloneFactory, Module {
                 (string, string, address, address, address, address, bytes)
             );
 
-        __Ownable_init();
-        transferOwnership(_avatar);
+        __Ownable_init(_msgSender());
+        transferOwnership(_avatar); // questionable if we actually need this, as __Ownable_init() did not require arguments before
 
         // Set the Gnosis safe address
         avatar = _avatar;

@@ -1,6 +1,6 @@
 pragma solidity >=0.8.0;
 
-import "safe-contracts/contracts/proxies/SafeProxyFactory.sol";
+import "@gnosis.pm/safe-contracts/contracts/proxies/SafeProxyFactory.sol";
 import "zodiac/contracts/factory/ModuleProxyFactory.sol";
 import './Baal.sol';
 
@@ -126,11 +126,13 @@ contract BaalSummoner is ModuleProxyFactory {
 
     function deployAndSetupSafe(address _moduleAddr, uint256 _saltNonce) internal returns(address) {
         // Deploy new safe but do not set it up yet
-        GnosisSafe _safe = GnosisSafe(
+        bytes memory emptyBytes;
+        Safe _safe = Safe(
             payable(
-                safeProxyFactory.createProxy(
+                safeProxyFactory.createProxyWithNonce(
                     gnosisSingleton,
-                    abi.encodePacked(_saltNonce)
+                    emptyBytes,
+                    uint256(keccak256(abi.encodePacked(_saltNonce)))
                 )
             )
         );
