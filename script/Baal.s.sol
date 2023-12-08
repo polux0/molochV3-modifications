@@ -8,13 +8,11 @@ import '../src/SharesERC20.sol';
 contract BaalScript is Script {
     function setUp() public {}
 
-    function run() public {
+    function run() public payable returns (address) {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
         Baal baal = new Baal();
         vm.stopBroadcast();
+        return address(baal);
     }
-    // function setUp() public {
-
-    // }
 }
