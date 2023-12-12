@@ -18,8 +18,6 @@ forge script script/Baal.s.sol:BaalScript --fork-url http://localhost:8545 --bro
 #summon Baal
 
 forge script script/deploy/SummonScript.s.sol:SummonScript --fork-url http://localhost:8545 --broadcast
-forge script script/deploy/SummonScript.s.sol:SummonScript --fork-url https://eth-goerli.g.alchemy.com/v2/Y_YVc4SMwIHsrmjKO7BYPa8mqdnI2yB- --fork-block-number 10179358 --broadcast
-
 
 #technical debt: 
 
