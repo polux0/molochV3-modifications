@@ -6,11 +6,10 @@ import {Script, console} from "forge-std/Script.sol";
 import '../LootERC20.s.sol';
 import '../SharesERC20.s.sol';
 import '../Baal.s.sol';
-
 import '../../src/BaalSummoner.sol';
 import '../../src/Baal.sol';
-
 import '../../src/interfaces/IBaal.sol';
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 
 contract SummonScript is Script {
@@ -86,6 +85,9 @@ contract SummonScript is Script {
     bytes deploymentConfig;
     bytes adminConfig;
 
+    // upcoming member
+    address upcomingMember = 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC;
+
     event SummonBaal(address baal, address lootToken, address sharesToken, address safe);
 
 
@@ -99,6 +101,11 @@ contract SummonScript is Script {
         summoners[0] = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
         return summoners;
     }
+    function initializeMembers() public pure returns (address[] memory){
+        address[] memory upcomingMembers = new address[](1);
+        upcomingMembers[0] = 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC;
+        return upcomingMembers;
+    } 
     function getGovernanceConfig() public view returns (bytes memory) {
         return abi.encode(
             VOTING_PERIOD_IN_SECONDS,
@@ -194,9 +201,8 @@ contract SummonScript is Script {
         vm.startBroadcast(deployerPrivateKey);
         baalSummoner = new BaalSummoner(baalSingletonAddress, gnosisSingleton, gnosisFallbackLibrary, gnosisMultisendLibrary, gnosisSafeProxyFactory, moduleProxyFactory, lootERC20SingletonAddress, sharesERC20SingletonAddress);
         console.log('BaalSummoner deployed at: ', address(baalSummoner));
-        // vm.expectEmit(true, true, true, true);
-        vm.stopBroadcast();
-        baal = new Baal();
+        vm.expectEmit(true, true, true, true);
+        vm.stopBroadcast(); 
 
         // encoded init params
         bytes memory encodedInitParams = encodeInitParams();
@@ -205,13 +211,22 @@ contract SummonScript is Script {
 
         uint256 randomSeed = uint256(keccak256(abi.encodePacked(block.timestamp, block.difficulty, msg.sender))) % 10000000;
 
-        // emit SummonBaal(baalSingletonAddress, lootERC20SingletonAddress,sharesERC20SingletonAddress, address(0));
-        baalSummoner.summonBaalAndSafe(
+        address baal = baalSummoner.summonBaalAndSafe(
         encodedInitParams,
         encodedInitActions,
         randomSeed
         );
+        console.log('Baal returned from summoner deployed at: ', baal);
+        // Shaman could add member
+        uint256 shamanPrivateKey = vm.envUint("PRIVATE_KEY_SHAMAN");
+        // Test if shaman can add member 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC without voting
+        vm.startBroadcast(shamanPrivateKey);
+        IBaal(baal).mintShares(initializeMembers(), summonersShares);
 
+        // we need to catch address of SharesERC20 from summonBaalAndSafe event!
+        uint256 memberBalance = ERC20(sharesERC20SingletonAddress).balanceOf(upcomingMember);
+        console.log('upcoming member balance: ', memberBalance);
+        vm.stopBroadcast();
 
     }
     // function setUp() public {
