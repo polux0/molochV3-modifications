@@ -67,26 +67,38 @@ contract SummonScript is Script {
     bool sharesPaused = false;
     bool lootPaused = false;
 
-    // shamans
+    // shamans, moved to initializeShamans()
 
-    address[] shamans = ['0x70997970C51812dc3A010C7d01b50e0d17dc79C8'];
+    address[] shamans = [0x70997970C51812dc3A010C7d01b50e0d17dc79C8];
     uint256[] permissions = [7];
 
-    // summoner array
-    address summoners = ['0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266'];
-    uint256 summonersShares = [10];
+    // summoners array
+    address[] summoners = [0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266];
+    uint256[] summonersShares = [10];
 
     // shares array
-    uint256 summonersLoot = [10];
+    uint256[] summonersLoot = [10];
 
     // adming config 
-    bool transferableTokens = [false,false];
+    bool[] transferableTokens = [false,false];
 
     bytes governanceConfig;
     bytes deploymentConfig;
     bytes adminConfig;
 
+    event SummonBaal(address baal, address lootToken, address sharesToken, address safe);
 
+
+    function initializeShamans() public pure returns (address[] memory){
+        address[] memory shamans = new address[](1);
+        shamans[0] = 0x70997970C51812dc3A010C7d01b50e0d17dc79C8;
+        return shamans;
+    }
+    function initializeSummoners() public pure returns (address[] memory){
+        address[] memory summoners = new address[](1);
+        summoners[0] = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
+        return summoners;
+    }
     function getGovernanceConfig() public view returns (bytes memory) {
         return abi.encode(
             VOTING_PERIOD_IN_SECONDS,
@@ -128,26 +140,36 @@ contract SummonScript is Script {
         require(_shamans.length == _permissions.length, "!array parity"); // Ensuring array lengths match
         return abi.encodeWithSignature("setShamans(address[],uint256[])", _shamans, _permissions);
     }
-    function encodeMintShares(address[] to, uint256[] amount) public {
-        require(to.length == amount.length, "!array parity");
-        return abi.encodeWithSignature("mintShares(address[], uint256[])", to, amount);
+    function encodeMintShares(address[] memory _to, uint256[] memory _amount) public view returns (bytes memory) {
+        require(_to.length == _amount.length, "!array parity");
+        return abi.encodeWithSignature("mintShares(address[],uint256[])", _to, _amount);
     }
-    function encodeMintLoot(address[] to, uint256[] amount) public {
-        require(to.length == amount.length, "!array parity");
-        return abi.encodeWithSignature("mintShares(address[], uint256[])", to, amount);
+    function encodeMintLoot(address[] memory _to, uint256[] memory _amount) public view returns (bytes memory) {
+        require(_to.length == _amount.length, "!array parity");
+        return abi.encodeWithSignature("mintShares(address[],uint256[])", _to, _amount);
     }
-    function encodePost(string _content, string _tag) public {
+    function encodePost(string memory _content, string memory _tag) public view returns (bytes memory) {
         return abi.encodeWithSignature("post(string,string)", _content, _tag);
     }
-    function encodeExecuteAsBaal(address _to, uint256 _value, bytes calldata _data) public {
+    function encodeExecuteAsBaal(address _to, uint256 _value, bytes memory _data) public view returns (bytes memory) {
         return abi.encodeWithSignature("executeAsBaal(address,uint256,bytes)", _to, _value, encodePost(content, tag));
     }
-    function encodeInitParams() public {
+    function encodeInitParams() public view returns (bytes memory) {
         return abi.encode(TOKEN_NAME, TOKEN_SYMBOL);
     }
-    function encodeInitActions() public {
-        return abi.encode(encodeSetAdminConfig(), encodeSetGovernanceConfig(), encodeSetShamans(), encodeMintShares(), encodeMintLoot(), encodeExecuteAsBaal());
-    }
+    function encodeInitActions() public view returns (bytes[] memory) {
+        bytes[] memory initActions = new bytes[](5); // Adjust the size based on the number of actions
+
+        initActions[0] = encodeSetAdminConfig(sharesPaused, lootPaused);
+        initActions[1] = encodeSetGovernanceConfig(governanceConfig);
+        initActions[2] = encodeSetShamans(initializeShamans(), permissions);
+        initActions[3] = encodeMintShares(initializeSummoners(), summonersShares);
+        initActions[4] = encodeMintLoot(initializeSummoners(), summonersLoot);
+    // initActions[5] = encodeExecuteAsBaal(); // Add this when you implement it
+
+    return initActions;
+}
+
 
     function setUp() public {
         
@@ -172,21 +194,24 @@ contract SummonScript is Script {
         vm.startBroadcast(deployerPrivateKey);
         baalSummoner = new BaalSummoner(baalSingletonAddress, gnosisSingleton, gnosisFallbackLibrary, gnosisMultisendLibrary, gnosisSafeProxyFactory, moduleProxyFactory, lootERC20SingletonAddress, sharesERC20SingletonAddress);
         console.log('BaalSummoner deployed at: ', address(baalSummoner));
+        // vm.expectEmit(true, true, true, true);
         vm.stopBroadcast();
         baal = new Baal();
 
         // encoded init params
         bytes memory encodedInitParams = encodeInitParams();
         // encoded init actions
-        bytes memory encodedInitActions = encodeInitActions();
+        bytes[] memory encodedInitActions = encodeInitActions();
 
         uint256 randomSeed = uint256(keccak256(abi.encodePacked(block.timestamp, block.difficulty, msg.sender))) % 10000000;
 
+        // emit SummonBaal(baalSingletonAddress, lootERC20SingletonAddress,sharesERC20SingletonAddress, address(0));
         baalSummoner.summonBaalAndSafe(
-        encodedInitParams.initParams,
-        encodedInitParams.initalizationActions,
+        encodedInitParams,
+        encodedInitActions,
         randomSeed
         );
+
 
     }
     // function setUp() public {
