@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
+import "forge-std/Vm.sol";
 import {Script, console} from "forge-std/Script.sol";
 
 import '../LootERC20.s.sol';
@@ -27,6 +28,11 @@ contract SummonScript is Script {
         address poster;
         address gnosisSafeProxyFactory;
         address moduleProxyFactory;
+    }
+    struct Log {
+        bytes32[] topics;
+        bytes data;
+        address emitter;
     }
 
     Addresses addresses; 
@@ -85,6 +91,12 @@ contract SummonScript is Script {
     bytes deploymentConfig;
     bytes adminConfig;
 
+    // actual addresses, deployed via BaalSummoner
+    address baalLogs;
+    address lootLogs;
+    address sharesLogs;
+    address safeLogs;
+    
     // upcoming member
     address upcomingMember = 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC;
 
@@ -92,14 +104,14 @@ contract SummonScript is Script {
 
 
     function initializeShamans() public pure returns (address[] memory){
-        address[] memory shamans = new address[](1);
-        shamans[0] = 0x70997970C51812dc3A010C7d01b50e0d17dc79C8;
-        return shamans;
+        address[] memory _shamans = new address[](1);
+        _shamans[0] = 0x70997970C51812dc3A010C7d01b50e0d17dc79C8;
+        return _shamans;
     }
     function initializeSummoners() public pure returns (address[] memory){
-        address[] memory summoners = new address[](1);
-        summoners[0] = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
-        return summoners;
+        address[] memory _summoners = new address[](1);
+        _summoners[0] = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
+        return _summoners;
     }
     function initializeMembers() public pure returns (address[] memory){
         address[] memory upcomingMembers = new address[](1);
@@ -137,25 +149,25 @@ contract SummonScript is Script {
 
     // encode actions
 
-    function encodeSetAdminConfig(bool pauseShares, bool pauseLoot) public view returns (bytes memory) {
+    function encodeSetAdminConfig(bool pauseShares, bool pauseLoot) public pure returns (bytes memory) {
         return abi.encodeWithSignature("setAdminConfig(bool,bool)", pauseShares, pauseLoot);
     }
-    function encodeSetGovernanceConfig(bytes memory _governanceConfig) public view returns (bytes memory) {
+    function encodeSetGovernanceConfig(bytes memory _governanceConfig) public pure returns (bytes memory) {
         return abi.encodeWithSignature("setGovernanceConfig(bytes)", _governanceConfig);
     }
-    function encodeSetShamans(address[] memory _shamans, uint256[] memory _permissions) public view returns (bytes memory){
+    function encodeSetShamans(address[] memory _shamans, uint256[] memory _permissions) public pure returns (bytes memory){
         require(_shamans.length == _permissions.length, "!array parity"); // Ensuring array lengths match
         return abi.encodeWithSignature("setShamans(address[],uint256[])", _shamans, _permissions);
     }
-    function encodeMintShares(address[] memory _to, uint256[] memory _amount) public view returns (bytes memory) {
+    function encodeMintShares(address[] memory _to, uint256[] memory _amount) public pure returns (bytes memory) {
         require(_to.length == _amount.length, "!array parity");
         return abi.encodeWithSignature("mintShares(address[],uint256[])", _to, _amount);
     }
-    function encodeMintLoot(address[] memory _to, uint256[] memory _amount) public view returns (bytes memory) {
+    function encodeMintLoot(address[] memory _to, uint256[] memory _amount) public pure returns (bytes memory) {
         require(_to.length == _amount.length, "!array parity");
         return abi.encodeWithSignature("mintShares(address[],uint256[])", _to, _amount);
     }
-    function encodePost(string memory _content, string memory _tag) public view returns (bytes memory) {
+    function encodePost(string memory _content, string memory _tag) public pure returns (bytes memory) {
         return abi.encodeWithSignature("post(string,string)", _content, _tag);
     }
     function encodeExecuteAsBaal(address _to, uint256 _value, bytes memory _data) public view returns (bytes memory) {
@@ -174,12 +186,10 @@ contract SummonScript is Script {
         initActions[4] = encodeMintLoot(initializeSummoners(), summonersLoot);
     // initActions[5] = encodeExecuteAsBaal(); // Add this when you implement it
 
-    return initActions;
-}
+        return initActions;
+    }
 
-
-    function setUp() public {
-        
+    function setUp() public {   
 
         lootScript = new LootERC20Script();
         sharesScript = new SharesERC20Script();
@@ -201,7 +211,7 @@ contract SummonScript is Script {
         vm.startBroadcast(deployerPrivateKey);
         baalSummoner = new BaalSummoner(baalSingletonAddress, gnosisSingleton, gnosisFallbackLibrary, gnosisMultisendLibrary, gnosisSafeProxyFactory, moduleProxyFactory, lootERC20SingletonAddress, sharesERC20SingletonAddress);
         console.log('BaalSummoner deployed at: ', address(baalSummoner));
-        vm.expectEmit(true, true, true, true);
+        vm.recordLogs();
         vm.stopBroadcast(); 
 
         // encoded init params
@@ -211,25 +221,46 @@ contract SummonScript is Script {
 
         uint256 randomSeed = uint256(keccak256(abi.encodePacked(block.timestamp, block.difficulty, msg.sender))) % 10000000;
 
-        address baal = baalSummoner.summonBaalAndSafe(
+        address baalProxy = baalSummoner.summonBaalAndSafe(
         encodedInitParams,
         encodedInitActions,
         randomSeed
         );
-        console.log('Baal returned from summoner deployed at: ', baal);
+
+        Vm.Log[] memory entries = vm.getRecordedLogs();
+        console.log('entries.length: ', entries.length);
+        bytes32 SUMMON_BAAL_SIGNATURE = keccak256("SummonBaal(address,address,address,address)");
+        for(uint256 i = 0; i < entries.length; i++){
+            if(entries[i].topics.length > 0 && entries[i].topics[0] == SUMMON_BAAL_SIGNATURE){
+            // Decode the addresses from the topics (since they are indexed)
+                console.log('length of topics', entries[i].topics.length);
+                baalLogs = address(uint160(uint256(entries[i].topics[1])));
+                lootLogs = address(uint160(uint256(entries[i].topics[2])));
+                sharesLogs = address(uint160(uint256(entries[i].topics[3])));
+                safeLogs = abi.decode(entries[i].data, (address));
+
+                // Log the decoded addresses
+                console.log("Baal Address: ", baalLogs);
+                console.log("Loot Address: ", lootLogs);
+                console.log("Shares Address: ", sharesLogs);
+                console.log("Safe Address: ", safeLogs);
+                break;
+            }
+        }
+        console.log('Baal returned from summoner deployed at: ', baalProxy);
         // Shaman could add member
         uint256 shamanPrivateKey = vm.envUint("PRIVATE_KEY_SHAMAN");
-        // Test if shaman can add member 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC without voting
+        // Test if shaman (0x70997970C51812dc3A010C7d01b50e0d17dc79C8) can add member 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC without voting
         vm.startBroadcast(shamanPrivateKey);
-        IBaal(baal).mintShares(initializeMembers(), summonersShares);
-
+        uint256 summonerSharesBalance = ERC20(sharesLogs).balanceOf(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266);
+        uint256 memberBalanceBefore = ERC20(sharesLogs).balanceOf(upcomingMember);
+        console.log('summonerSharesBalance: ', summonerSharesBalance);
+        console.log('memberBalanceBefore: ', memberBalanceBefore);
+        IBaal(baalLogs).mintShares(initializeMembers(), summonersShares);
         // we need to catch address of SharesERC20 from summonBaalAndSafe event!
-        uint256 memberBalance = ERC20(sharesERC20SingletonAddress).balanceOf(upcomingMember);
-        console.log('upcoming member balance: ', memberBalance);
+        uint256 memberBalanceAfter = ERC20(sharesLogs).balanceOf(upcomingMember);
+        console.log('memberBalanceAfter: ', memberBalanceAfter);
         vm.stopBroadcast();
 
     }
-    // function setUp() public {
-
-    // }
 }
