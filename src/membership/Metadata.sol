@@ -10,20 +10,6 @@ import '../interfaces/IMetadata.sol';
 /// @notice Constructs necessary metadata for MembershipNFT
 contract Metadata is IMetadata, Ownable{
     using Strings for uint256;
-    // Token name
-    string private _name;
-
-    // Token symbol
-    string private _symbol;
-
-    // Is member kyc verified
-    string private _kycVerified;
-
-    // Current tokenId counter
-    uint256 public _currentTokenId;
-    
-    // Desired price for membership
-    uint256 public _price;
 
     constructor() Ownable(msg.sender) {
     }
