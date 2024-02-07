@@ -1,7 +1,9 @@
 
+To summon a Baal
+
 #fork goerli  
 
-anvil --fork-url https://eth-goerli.g.alchemy.com/v2/Y_YVc4SMwIHsrmjKO7BYPa8mqdnI2yB- --fork-block-number 10179358 --broadcast
+anvil --fork-url https://eth-goerli.g.alchemy.com/v2/Y_YVc4SMwIHsrmjKO7BYPa8mqdnI2yB- --fork-block-number 10179358
 
 #deploy LootERC20
 
@@ -18,6 +20,12 @@ forge script script/Baal.s.sol:BaalScript --fork-url http://localhost:8545 --bro
 #summon Baal
 
 forge script script/deploy/SummonScript.s.sol:SummonScript --fork-url http://localhost:8545 --broadcast
+
+#create an NFT
+
+forge script script/MembershipNFT.s.sol:MembershipNFTScript --fork-url http://localhost:8545 --broadcast
+
+
 
 #technical debt: 
 
