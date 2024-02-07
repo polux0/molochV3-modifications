@@ -17,7 +17,7 @@ contract MembershipNFT is IERC721Receiver, ERC721URIStorage, Ownable{
     string private _symbol;
 
     // Is member kyc verified
-    string private _kycVerified;
+    mapping(address => bool) public _kycVerified;
 
     // Current tokenId counter
     uint256 public _currentTokenId;
@@ -69,5 +69,19 @@ contract MembershipNFT is IERC721Receiver, ERC721URIStorage, Ownable{
     // get price for the membership
     function getPrice() public view returns (uint256) {
         return _price;
+    }
+    // Getter for KYC verification status
+    // @param user The address of the user to query the KYC status for
+    // @return The KYC status as boolean
+    function getKycStatus(address user) public view returns (bool) {
+        return _kycVerified[user];
+    }
+
+    // Setter for KYC verification status
+    // Only the owner of the contract can set the KYC status
+    // @param user The address of the user to set the KYC status for
+    // @param status The KYC status to set
+    function setKycStatus(address user, bool status) public onlyOwner {
+        _kycVerified[user] = status;
     }
 }
