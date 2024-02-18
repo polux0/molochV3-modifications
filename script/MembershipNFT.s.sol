@@ -16,7 +16,7 @@ contract MembershipNFTScript is Script {
     }
 
     function run() public returns (address) {
-        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
+        uint256 deployerPrivateKey = vm.envUint("GOERLI_PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
         Metadata _metadata = new Metadata();
         console.log('MembershipNFTMetadata deployed at: ', address(_metadata));

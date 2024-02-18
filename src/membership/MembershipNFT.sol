@@ -6,7 +6,6 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol"; /
 import '../interfaces/IMetadata.sol';
 //SPDX-License-Identifier: MIT
 
-
 /// @title MembershipNFT
 /// @notice Accounting for members that are light KYC verified as well as for those that are not
 contract MembershipNFT is IERC721Receiver, ERC721URIStorage, Ownable{
@@ -40,6 +39,7 @@ contract MembershipNFT is IERC721Receiver, ERC721URIStorage, Ownable{
         _name = name_;
         _symbol = symbol_;
         _currentTokenId = 0;
+        _price = 0.00000000000001 ether;
         _imetadata = IMetadata(metadata_);
 
     }
@@ -54,8 +54,7 @@ contract MembershipNFT is IERC721Receiver, ERC721URIStorage, Ownable{
     
     // mint an nft
     function mint() public payable {
-
-        require(msg.value >= _price, "Ether value sent is not correct");
+        // require(msg.value >= _price, "Ether value sent is not correct");
         _currentTokenId++;
         _safeMint(msg.sender, _currentTokenId);
         _setTokenURI(_currentTokenId, _imetadata.getTokenURI(_currentTokenId));
