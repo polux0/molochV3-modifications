@@ -83,4 +83,8 @@ contract MembershipNFT is IERC721Receiver, ERC721URIStorage, Ownable{
     function setKycStatus(address user, bool status) public onlyOwner {
         _kycVerified[user] = status;
     }
+    // technical debt
+    // function setKycStatusMultiple(address[] users, bool status) public onlyOwner{}
+    // technical debt
+    // create modifier `shamanOnly`
 }
