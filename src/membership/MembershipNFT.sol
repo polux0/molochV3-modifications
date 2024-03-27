@@ -16,7 +16,7 @@ contract MembershipNFT is IERC721Receiver, ERC721URIStorage, Ownable{
     string private _symbol;
 
     // Is member kyc verified
-    mapping(address => bool) public _kycVerified;
+    mapping(uint256 => bool) public _kycVerified;
 
     // Current tokenId counter
     uint256 public _currentTokenId;
@@ -29,6 +29,12 @@ contract MembershipNFT is IERC721Receiver, ERC721URIStorage, Ownable{
 
     // Metadata contract interface
     IMetadata public _imetadata;
+
+    // Event for when a member is KYC verified
+    event MembershipVerified(uint256 indexed tokenId, bool status);
+
+    // Event for a when membership is minted
+    event MembershipMinted(uint256 indexed tokenId);
 
     constructor(
         string memory name_,
@@ -58,6 +64,7 @@ contract MembershipNFT is IERC721Receiver, ERC721URIStorage, Ownable{
         _currentTokenId++;
         _safeMint(msg.sender, _currentTokenId);
         _setTokenURI(_currentTokenId, _imetadata.getTokenURI(_currentTokenId));
+        emit MembershipMinted(_currentTokenId);
     }
     // set price for the membership, owner only
     function setPrice(uint256 newPrice) public onlyOwner(){
@@ -70,21 +77,26 @@ contract MembershipNFT is IERC721Receiver, ERC721URIStorage, Ownable{
         return _price;
     }
     // Getter for KYC verification status
-    // @param user The address of the user to query the KYC status for
+    // @param nftId The id of the nft to query the KYC status for
     // @return The KYC status as boolean
-    function getKycStatus(address user) public view returns (bool) {
-        return _kycVerified[user];
+    function getKycStatus(uint256 nftId) public view returns (bool) {
+        return _kycVerified[nftId];
     }
 
     // Setter for KYC verification status
     // Only the owner of the contract can set the KYC status
-    // @param user The address of the user to set the KYC status for
+    // @param nftId The id of the nft to set the KYC status for
     // @param status The KYC status to set
-    function setKycStatus(address user, bool status) public onlyOwner {
-        _kycVerified[user] = status;
+    function setKycStatus(uint256 nftId, bool status) public onlyOwner {
+        _kycVerified[nftId] = status;
     }
     // technical debt
-    // function setKycStatusMultiple(address[] users, bool status) public onlyOwner{}
+    function setKycStatusMultiple(uint256[] memory nftIds, bool status) public {
+    for (uint i = 0; i < nftIds.length; i++) {
+        _kycVerified[nftIds[i]] = status;
+        emit MembershipVerified(nftIds[i], status);
+    }
+}
     // technical debt
     // create modifier `shamanOnly`
 }
