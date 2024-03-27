@@ -25,11 +25,11 @@ forge script script/deploy/SummonScript.s.sol:SummonScript --fork-url http://loc
 
 #create an NFT
 
-forge script script/MembershipNFTScript.s.sol:MembershipNFTScript --fork-url http://localhost:8545 --broadcast
+forge script script/MembershipNFT.s.sol:MembershipNFTScript --fork-url http://localhost:8545 --broadcast
 
 2. To deploy membership NFT ( Goerli )
 
-forge script script/MembershipNFTScript.s.sol:MembershipNFTScript --broadcast --verify --rpc-url ${GOERLI_RPC_URL}
+forge script script/MembershipNFT.s.sol:MembershipNFTScript --broadcast --verify --rpc-url ${GOERLI_RPC_URL}
 
 
 #technical debt: 
