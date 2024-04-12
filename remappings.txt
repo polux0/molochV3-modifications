@@ -3,7 +3,8 @@
 ds-test/=lib/forge-std/lib/ds-test/src/
 erc4626-tests/=lib/openzeppelin-contracts/lib/erc4626-tests/
 forge-std/=lib/forge-std/src/
+gsn/=lib/gsn/
 openzeppelin-contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/
 openzeppelin-contracts/=lib/openzeppelin-contracts/
 @gnosis.pm/safe-contracts/=lib/safe-contracts/
-zodiac/contracts/=lib/zodiac/contracts/
+zodiac/=lib/zodiac/contracts/

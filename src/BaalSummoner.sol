@@ -1,7 +1,7 @@
 pragma solidity >=0.8.0;
 
 import "@gnosis.pm/safe-contracts/contracts/proxies/SafeProxyFactory.sol";
-import "zodiac/contracts/factory/ModuleProxyFactory.sol";
+import "zodiac/factory/ModuleProxyFactory.sol";
 import './Baal.sol';
 
 contract BaalSummoner is ModuleProxyFactory {

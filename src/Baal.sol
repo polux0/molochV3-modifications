@@ -11,7 +11,7 @@ pragma solidity >=0.8.0;
 
 import "@gnosis.pm/safe-contracts/contracts/base/Executor.sol";
 import "@gnosis.pm/safe-contracts/contracts/Safe.sol";
-import "zodiac/contracts/core/Module.sol";
+import "zodiac/core/Module.sol";
 import "@gnosis.pm/safe-contracts/contracts/common/Enum.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "./interfaces/IBaalToken.sol";

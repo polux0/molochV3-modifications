@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
-import "zodiac/contracts/factory/ModuleProxyFactory.sol";
+import "zodiac/factory/ModuleProxyFactory.sol";
 import "@gnosis.pm/safe-contracts/contracts/proxies/SafeProxyFactory.sol";
 import "@gnosis.pm/safe-contracts/contracts/Safe.sol";
 import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";

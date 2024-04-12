@@ -11,9 +11,9 @@ pragma solidity ^0.8.7;
 
 import "@gnosis.pm/safe-contracts/contracts/base/Executor.sol";
 import "@gnosis.pm/safe-contracts/contracts/Safe.sol";
-import "zodiac/contracts/core/Module.sol";
+import "zodiac/core/Module.sol";
 import "@gnosis.pm/safe-contracts/contracts/common/Enum.sol";
-import "@opengsn/contracts/src/BaseRelayRecipient.sol";
+import "gsn/packages/contracts/src/BaseRelayRecipient.sol";
 import "@openzeppelin/contracts-upgradeable/utils/cryptography/EIP712Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 
