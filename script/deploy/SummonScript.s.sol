@@ -8,9 +8,11 @@ import '../LootERC20.s.sol';
 import '../SharesERC20.s.sol';
 import '../Baal.s.sol';
 import '../../src/BaalSummoner.sol';
+import '../../src/BaalSummonerV2.sol';
 import '../../src/Baal.sol';
 import '../../src/interfaces/IBaal.sol';
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "zodiac/contracts/factory/ModuleProxyFactory.sol";
 
 
 contract SummonScript is Script {
@@ -35,6 +37,13 @@ contract SummonScript is Script {
         address emitter;
     }
 
+    // Are those the same in Sepolia?
+    // gnosisSingleton - yes
+    // gnosisFallbackLibrary - yes
+    // gnosisMultisendLibrary - yes
+    // poster - yes
+    // gnosisSafeProxyFactory - yes
+    // moduleProxyFactory - no, we'll need to deploy one on Sepolia
     Addresses addresses; 
     address gnosisSingleton = 0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552;
     address gnosisFallbackLibrary = 0xf48f2B2d2a534e402487b3ee7C18c33Aec0Fe5e4;
@@ -105,7 +114,7 @@ contract SummonScript is Script {
 
     function initializeShamans() public pure returns (address[] memory){
         address[] memory _shamans = new address[](1);
-        _shamans[0] = 0x70997970C51812dc3A010C7d01b50e0d17dc79C8;
+        _shamans[0] = 0x70997970C51812dc3A010C7d01b50e0d17dc79C8; 
         return _shamans;
     }
     function initializeSummoners() public pure returns (address[] memory){
@@ -209,7 +218,11 @@ contract SummonScript is Script {
         baalSingletonAddress = payable(baalScript.run());
         console.log('BaalSingleton deployed at: ', baalSingletonAddress);
         vm.startBroadcast(deployerPrivateKey);
-        baalSummoner = new BaalSummoner(baalSingletonAddress, gnosisSingleton, gnosisFallbackLibrary, gnosisMultisendLibrary, gnosisSafeProxyFactory, moduleProxyFactory, lootERC20SingletonAddress, sharesERC20SingletonAddress);
+        // Deploying ModuleProxyFactory as it has not been deployed on Sepolia before
+        ModuleProxyFactory _moduleProxyFactory = new ModuleProxyFactory();
+        address _moduleProxyFactoryAddress = address(_moduleProxyFactory);
+        console.log('ModuleProxyFactory deployed at: ', _moduleProxyFactoryAddress);
+        baalSummoner = new BaalSummoner(baalSingletonAddress, gnosisSingleton, gnosisFallbackLibrary, gnosisMultisendLibrary, gnosisSafeProxyFactory, _moduleProxyFactoryAddress, lootERC20SingletonAddress, sharesERC20SingletonAddress);
         console.log('BaalSummoner deployed at: ', address(baalSummoner));
         vm.recordLogs();
         vm.stopBroadcast(); 
@@ -219,7 +232,8 @@ contract SummonScript is Script {
         // encoded init actions
         bytes[] memory encodedInitActions = encodeInitActions();
 
-        uint256 randomSeed = uint256(keccak256(abi.encodePacked(block.timestamp, block.difficulty, msg.sender))) % 10000000;
+        // technical debt & security risk - replace block.prevendao with Chainlink VRF
+        uint256 randomSeed = uint256(keccak256(abi.encodePacked(block.timestamp, block.prevrandao, msg.sender))) % 10000000;
 
         address baalProxy = baalSummoner.summonBaalAndSafe(
         encodedInitParams,
@@ -248,19 +262,21 @@ contract SummonScript is Script {
             }
         }
         console.log('Baal returned from summoner deployed at: ', baalProxy);
-        // Shaman could add member
-        uint256 shamanPrivateKey = vm.envUint("PRIVATE_KEY_SHAMAN");
-        // Test if shaman (0x70997970C51812dc3A010C7d01b50e0d17dc79C8) can add member 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC without voting
-        vm.startBroadcast(shamanPrivateKey);
-        uint256 summonerSharesBalance = ERC20(sharesLogs).balanceOf(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266);
-        uint256 memberBalanceBefore = ERC20(sharesLogs).balanceOf(upcomingMember);
-        console.log('summonerSharesBalance: ', summonerSharesBalance);
-        console.log('memberBalanceBefore: ', memberBalanceBefore);
-        IBaal(baalLogs).mintShares(initializeMembers(), summonersShares);
-        // we need to catch address of SharesERC20 from summonBaalAndSafe event!
-        uint256 memberBalanceAfter = ERC20(sharesLogs).balanceOf(upcomingMember);
-        console.log('memberBalanceAfter: ', memberBalanceAfter);
-        vm.stopBroadcast();
+        // Testing if shaman has appropriate permissions
+        // More precisely: 
+        // If shaman (0x70997970C51812dc3A010C7d01b50e0d17dc79C8) can add member 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC without voting
+
+        // uint256 shamanPrivateKey = vm.envUint("PRIVATE_KEY_SHAMAN");
+        // vm.startBroadcast(shamanPrivateKey);
+        // uint256 summonerSharesBalance = ERC20(sharesLogs).balanceOf(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266);
+        // uint256 memberBalanceBefore = ERC20(sharesLogs).balanceOf(upcomingMember);
+        // console.log('summonerSharesBalance: ', summonerSharesBalance);
+        // console.log('memberBalanceBefore: ', memberBalanceBefore);
+        // IBaal(baalLogs).mintShares(initializeMembers(), summonersShares);
+        // // we need to catch address of SharesERC20 from summonBaalAndSafe event!
+        // uint256 memberBalanceAfter = ERC20(sharesLogs).balanceOf(upcomingMember);
+        // console.log('memberBalanceAfter: ', memberBalanceAfter);
+        // vm.stopBroadcast();
 
     }
 }

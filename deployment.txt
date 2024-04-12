@@ -1,5 +1,5 @@
 
-1. To summon a Baal
+1. To summon a Baal using local fork
 
 #fork goerli  
 
@@ -27,9 +27,27 @@ forge script script/deploy/SummonScript.s.sol:SummonScript --fork-url http://loc
 
 forge script script/MembershipNFT.s.sol:MembershipNFTScript --fork-url http://localhost:8545 --broadcast
 
-2. To deploy membership NFT ( Goerli )
+3. To deploy membership NFT ( Goerli )
 
 forge script script/MembershipNFT.s.sol:MembershipNFTScript --broadcast --verify --rpc-url ${GOERLI_RPC_URL}
+
+4. To summon MolochV3 dao on Sepolia
+
+#deploy LootERC20
+
+forge script script/LootERC20.s.sol:LootERC20Script --broadcast http://localhost:8545 --verify --rpc-url ${SEPOLIA_RPC_URL}
+
+#deploy SharesERC20
+
+forge script script/SharesERC20.s.sol:SharesERC20Script --broadcast http://localhost:8545 --verify --rpc-url ${SEPOLIA_RPC_URL}
+
+#deploy Baal
+
+forge script script/Baal.s.sol:BaalScript --broadcast http://localhost:8545 --verify --rpc-url ${SEPOLIA_RPC_URL}
+
+#summon Baal
+
+forge script script/deploy/SummonScript.s.sol:SummonScript --broadcast http://localhost:8545 --verify --rpc-url ${SEPOLIA_RPC_URL}
 
 
 #technical debt: 

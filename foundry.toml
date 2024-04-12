@@ -8,3 +8,4 @@ fs_permissions = [{access = "read", path = "./"}]
 
 [rpc_endpoints]
 goerli = "${GOERLI_RPC_URL}"
+sepolia = "${SEPOLIA_RPC_URL}"
